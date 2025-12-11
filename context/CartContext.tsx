@@ -13,24 +13,48 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// Helper sécurisé pour le panier qui ne plante jamais
+const safeLocalStorage = {
+  getItem: (key: string) => {
+    try {
+      // Le try-catch doit englober l'accès à window.localStorage lui-même
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return window.localStorage.getItem(key);
+      }
+    } catch (e) {
+      // Ignorer silencieusement si bloqué
+    }
+    return null;
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(key, value);
+      }
+    } catch (e) {
+      // Ignorer silencieusement si bloqué
+    }
+  }
+};
+
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
   // Load cart from local storage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem('bioumi-cart');
+    const savedCart = safeLocalStorage.getItem('bioumi-cart');
     if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (e) {
-        console.error("Failed to parse cart", e);
-      }
+        try {
+            setItems(JSON.parse(savedCart));
+        } catch (e) {
+            console.error("Failed to parse cart", e);
+        }
     }
   }, []);
 
   // Save cart to local storage on change
   useEffect(() => {
-    localStorage.setItem('bioumi-cart', JSON.stringify(items));
+    safeLocalStorage.setItem('bioumi-cart', JSON.stringify(items));
   }, [items]);
 
   const addToCart = (product: Product) => {
