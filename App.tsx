@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import Orders from './pages/Orders';
 
+// Bioumi Box App v2.5 - Fixed CSP & Storage issues
 function App() {
   return (
     <AuthProvider>

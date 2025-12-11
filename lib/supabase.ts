@@ -27,7 +27,8 @@ const getSafeStorage = () => {
   if (typeof window === 'undefined') return new MemoryStorage();
   
   try {
-    // Le simple accès à window.localStorage peut lever une exception SecurityError
+    // Le simple accès à window.localStorage peut lever une exception SecurityError sur certains navigateurs
+    // Nous devons l'envelopper dans un try-catch immédiat
     const storage = window.localStorage;
     const testKey = '__bioumi_test__';
     storage.setItem(testKey, testKey);
@@ -47,9 +48,9 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
         storage: safeStorage,
         autoRefreshToken: true,
-        // Si on est en fallback (RAM), on évite de forcer la persistance complexe qui pourrait échouer
+        // CRITIQUE : Si on est en fallback (RAM), on DESACTIVE la persistance pour éviter que le SDK interne ne tente d'écrire sur le disque
         persistSession: !isFallbackMode, 
-        detectSessionInUrl: true,
+        detectSessionInUrl: !isFallbackMode, // Désactiver aussi la détection URL si le stockage est instable
     },
 });
 
